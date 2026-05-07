@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: flowmind-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: WA_PHONE_NUMBER_ID
+        sync: false
+      - key: WA_ACCESS_TOKEN
+        sync: false
+      - key: WA_VERIFY_TOKEN
+        value: flowmind_secret
+      - key: FRONTEND_URL
+        sync: false
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false
