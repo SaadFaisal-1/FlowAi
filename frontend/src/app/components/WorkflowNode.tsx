@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { motion } from "motion/react";
-import { X, Link as LinkIcon } from "lucide-react";
+import { Link as LinkIcon, Zap } from "lucide-react";
 import type { Node } from "./WorkflowCanvas";
 
 interface WorkflowNodeProps {
@@ -13,24 +13,13 @@ interface WorkflowNodeProps {
   onConnect: () => void;
 }
 
-export function WorkflowNode({
-  node,
-  isSelected,
-  isConnecting,
-  onSelect,
-  onMove,
-  onConnect,
-}: WorkflowNodeProps) {
+export function WorkflowNode({ node, isSelected, isConnecting, onSelect, onMove, onConnect }: WorkflowNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "canvas-node",
-    item: () => {
-      return { id: node.id, ...node.position };
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
+    item: () => ({ id: node.id, ...node.position }),
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
   }));
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -38,77 +27,47 @@ export function WorkflowNode({
     const startX = e.clientX;
     const startY = e.clientY;
     const startPos = { ...node.position };
-
     const handleMouseMove = (e: MouseEvent) => {
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      onMove(node.id, {
-        x: startPos.x + dx,
-        y: startPos.y + dy,
-      });
+      onMove(node.id, { x: startPos.x + (e.clientX - startX), y: startPos.y + (e.clientY - startY) });
     };
-
     const handleMouseUp = () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  const Icon = node.icon;
+  const Icon = (typeof node.icon === "function" ? node.icon : Zap) as React.ElementType;
 
   return (
     <motion.div
       ref={nodeRef}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: isDragging ? 0.5 : 1 }}
-      style={{
-        position: "absolute",
-        left: node.position.x,
-        top: node.position.y,
-      }}
+      style={{ position: "absolute", left: node.position.x, top: node.position.y }}
       className={`w-52 cursor-move group ${isSelected ? "z-20" : "z-10"}`}
       onMouseDown={handleMouseDown}
       onClick={onSelect}
     >
-      <div
-        className={`rounded-xl backdrop-blur-xl bg-white/5 border-2 transition-all ${
-          isSelected
-            ? "border-purple-500 shadow-lg shadow-purple-500/20"
-            : isConnecting
-            ? "border-pink-500 shadow-lg shadow-pink-500/20"
-            : "border-white/10 hover:border-white/20"
-        }`}
-      >
-        {/* Header */}
+      <div className={`rounded-xl backdrop-blur-xl bg-white/5 border-2 transition-all ${
+        isSelected ? "border-purple-500 shadow-lg shadow-purple-500/20"
+        : isConnecting ? "border-pink-500 shadow-lg shadow-pink-500/20"
+        : "border-white/10 hover:border-white/20"}`}>
         <div className="p-4 border-b border-white/10">
           <div className="flex items-center justify-between mb-2">
-            <div
-              className={`w-10 h-10 rounded-lg bg-gradient-to-br ${node.color} flex items-center justify-center`}
-            >
+            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${node.color} flex items-center justify-center`}>
               <Icon className="w-5 h-5" />
             </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onConnect();
-              }}
+            <button onClick={(e) => { e.stopPropagation(); onConnect(); }}
               className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                isConnecting
-                  ? "bg-pink-500 text-white"
-                  : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
-              }`}
-            >
+                isConnecting ? "bg-pink-500 text-white" : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"}`}>
               <LinkIcon className="w-4 h-4" />
             </button>
           </div>
           <h3 className="font-medium text-sm">{node.label}</h3>
           <p className="text-xs text-gray-400 mt-1">{node.type}</p>
         </div>
-
-        {/* Connection Points */}
         <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-purple-500 border-2 border-gray-900" />
         <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-pink-500 border-2 border-gray-900" />
       </div>

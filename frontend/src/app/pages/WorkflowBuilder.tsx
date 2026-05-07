@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, Play, Save, Settings, MoreVertical, Loader2, Check } from "lucide-react";
+import { ArrowLeft, Play, Save, Loader2, Check, MessageCircle, Mail, FileSpreadsheet, Bot, Webhook, Database, Clock, GitBranch, Filter, Zap } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { NodePalette } from "../components/NodePalette";
 import { WorkflowCanvas, Node } from "../components/WorkflowCanvas";
 import { ConfigPanel } from "../components/ConfigPanel";
 import { api } from "../../api";
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  Webhook, Clock, MessageCircle, Mail, FileSpreadsheet, Bot, Zap, GitBranch, Filter, Database,
+  webhook: Webhook, schedule: Clock, whatsapp: MessageCircle, gmail: Mail,
+  sheets: FileSpreadsheet, chatbot: Bot, "ai-process": Zap, condition: GitBranch,
+  filter: Filter, database: Database,
+};
 
 export function WorkflowBuilder() {
   const { id } = useParams();
@@ -28,7 +35,13 @@ export function WorkflowBuilder() {
         setWorkflowName(wf.name);
         if (wf.canvas_json) {
           const canvas = JSON.parse(wf.canvas_json);
-          setNodes(canvas.nodes || []);
+          const restoredNodes = (canvas.nodes || []).map((n: any) => ({
+            ...n,
+            icon: typeof n.icon === "function"
+              ? n.icon
+              : ICON_MAP[n.icon?.displayName] || ICON_MAP[n.type] || Zap,
+          }));
+          setNodes(restoredNodes);
           setConnections(
             (canvas.edges || []).map((e: any) => ({ from: e.source, to: e.target }))
           );
@@ -48,7 +61,12 @@ export function WorkflowBuilder() {
   const handleSave = async () => {
     setSaving(true);
     const canvas_json = JSON.stringify({
-      nodes,
+      nodes: nodes.map(n => ({
+        ...n,
+        icon: typeof n.icon === "function"
+          ? (n.icon as any).displayName || n.type
+          : n.type,
+      })),
       edges: connections.map((c) => ({ source: c.from, target: c.to, id: `${c.from}-${c.to}` })),
     });
     try {
