@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { motion } from "motion/react";
-import { Link as LinkIcon, Zap } from "lucide-react";
+import { Link as LinkIcon, Zap, X } from "lucide-react";
 import type { Node } from "./WorkflowCanvas";
 
 interface WorkflowNodeProps {
@@ -11,9 +11,10 @@ interface WorkflowNodeProps {
   onSelect: () => void;
   onMove: (id: string, position: { x: number; y: number }) => void;
   onConnect: () => void;
+  onDelete: () => void;
 }
 
-export function WorkflowNode({ node, isSelected, isConnecting, onSelect, onMove, onConnect }: WorkflowNodeProps) {
+export function WorkflowNode({ node, isSelected, isConnecting, onSelect, onMove, onConnect, onDelete }: WorkflowNodeProps) {
   const nodeRef = useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, drag] = useDrag(() => ({
@@ -59,11 +60,17 @@ export function WorkflowNode({ node, isSelected, isConnecting, onSelect, onMove,
             <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${node.color} flex items-center justify-center`}>
               <Icon className="w-5 h-5" />
             </div>
-            <button onClick={(e) => { e.stopPropagation(); onConnect(); }}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                isConnecting ? "bg-pink-500 text-white" : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"}`}>
-              <LinkIcon className="w-4 h-4" />
-            </button>
+            <div className="flex gap-1">
+              <button onClick={(e) => { e.stopPropagation(); onConnect(); }}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                  isConnecting ? "bg-pink-500 text-white" : "bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"}`}>
+                <LinkIcon className="w-4 h-4" />
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-all bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <h3 className="font-medium text-sm">{node.label}</h3>
           <p className="text-xs text-gray-400 mt-1">{node.type}</p>
