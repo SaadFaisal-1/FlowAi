@@ -1,0 +1,37 @@
+# ── Python ────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# ── Environment & secrets (NEVER COMMIT) ──────
+.env
+*.env
+backend/.env
+
+# ── SQLite local database ─────────────────────
+*.db
+*.sqlite3
+
+# ── Node / Frontend ───────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vercel/
+
+# ── IDE ───────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Logs ──────────────────────────────────────
+*.log
+npm-debug.log*
